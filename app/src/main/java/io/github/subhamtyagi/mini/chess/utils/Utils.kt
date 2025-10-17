@@ -30,8 +30,11 @@ fun applyWebViewSettings(view: WebView) {
         settings.builtInZoomControls = true
         settings.displayZoomControls = false
 
+
         settings.allowContentAccess = true
         settings.allowFileAccess = true
+
+
 
         settings.useWideViewPort = true
         settings.loadWithOverviewMode = true
@@ -60,6 +63,31 @@ fun applyWebViewSettings(view: WebView) {
         }
 
     }
+}
+
+fun applyDynamicZoom(zoomPercent: Int) {
+    val zoomFactor = zoomPercent / 100.0
+    val widthPercent = (100.0 / zoomFactor).toInt()
+
+    val script = """
+            javascript:(function() {
+                var meta = document.querySelector('meta[name="viewport"]');
+                if (!meta) {
+                    meta = document.createElement('meta');
+                    meta.name = 'viewport';
+                    document.head.appendChild(meta);
+                }
+                meta.content = 'width=device-width, initial-scale=${zoomFactor}, maximum-scale=1.0, user-scalable=yes';
+                
+                document.body.style.zoom = "${zoomPercent}%";
+                document.body.style.transformOrigin = "0 0";
+                document.body.style.transform = "scale(${zoomFactor})";
+                document.body.style.width = "${widthPercent}%";
+                
+                return "Zoom applied: ${zoomPercent}%";
+            })()
+        """.trimIndent()
+
 }
 
 fun getHeader(settings: WebSettings): HashMap<String, String> {
